@@ -11,74 +11,72 @@ import {
 	TextField,
 	TablePagination,
 	Button,
-	Box,
-	AppBar,
-	Toolbar,
+    Toolbar,
+    AppBar,
+    Box
 } from "@mui/material";
-import { useNavigate } from "react-router-dom"; // Pour la navigation
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css"; // Pour les icônes FontAwesome
 import useLogout from "../utils/logout";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 
-const VerseTable = () => {
-	const [verses, setVerses] = useState([]);
+
+const EventTable = () => {
+	const [events, setEvents] = useState([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [page, setPage] = useState(0); // Gérer la page actuelle
 	const [rowsPerPage, setRowsPerPage] = useState(5); // Gérer le nombre de lignes par page
-	const navigate = useNavigate(); // Utilisez useNavigate pour la navigation
+	const navigate = useNavigate();
 	const baseUrl = process.env.REACT_APP_API_BASE_URL;
-	const token = localStorage.getItem("token");
+
 	useEffect(() => {
-		fetchVerses();
+		fetchEvents();
 	}, []);
 
-	const fetchVerses = async () => {
+	const fetchEvents = async () => {
 		try {
-			const response = await axios.get(`${baseUrl}/bls/retrieve-verse`, {
-				headers: {
-					Authorization: `Bearer ${token}`, // Include the token in the header
-				},
-			});
-			setVerses(response.data);	
+            const token = localStorage.getItem("token");
+			const response = await axios.get(`${baseUrl}/event/events`, {
+                headers: {
+                    Authorization: `Bearer ${token}`, // Include the token in the header
+                },
+            }); // Remplacez par votre URL d'API
+			setEvents(response.data);
 		} catch (error) {
-			if(error.status==404){
-				setVerses([]);
-			}
-			console.error("Error fetching verses:",  error);
+			console.error("Error fetching events:", error);
 		}
 	};
 
-	const handleDeleteVerse = async (id) => {
+	const handleDeleteEvent = async (id) => {
+        const token = localStorage.getItem("token");
 		const confirmDelete = window.confirm(
-			"Voulez-vous vraiment supprimer ce verset ?"
+			"Voulez-vous vraiment supprimer cet événement ?"
 		);
 		if (confirmDelete) {
 			try {
-				await axios.delete(`${baseUrl}/bls/delete-verse/${id}`, {
-					headers: {
+				await axios.delete(`${baseUrl}/event/delete-event/${id}`, {
+                    headers: {
 						Authorization: `Bearer ${token}`, // Include the token in the header
 					},
-				});
-				fetchVerses(); // Store fetched verses
-				
-				
+                }); // Remplacez par votre URL d'API pour la suppression
+				fetchEvents(); // Rafraîchir la liste des événements après la suppression
 			} catch (error) {
-				console.error("Error deleting verse:", error);
+				console.error("Error deleting event:", error);
 			}
 		}
 	};
 
-	const handleEditVerse = (id) => {
-		navigate(`/edit-verse/${id}`);
+	const handleEditEvent = (id) => {
+		navigate(`/edit-event/${id}`); // Naviguer vers la page d'édition
 	};
 
-	const handleAddVerse = () => {
-		navigate("/add-verse");
+	const handleAddEvent = () => {
+		navigate("/add-event"); // Naviguer vers la page d'ajout
 	};
 
 	const handleHome = () => {
-		navigate("/");
+		navigate("/"); // Naviguer vers la page d'accueil
 	};
 
 	const handleChangePage = (event, newPage) => {
@@ -90,13 +88,12 @@ const VerseTable = () => {
 		setPage(0); // Revenir à la première page
 	};
 
-	const filteredVerses = verses.filter((verse) => {
+	const filteredEvents = events.filter((event) => {
 		const searchLower = searchTerm.toLowerCase();
 		return (
-			verse.book.toLowerCase().includes(searchLower) ||
-			verse.chapter.toString().includes(searchLower) ||
-			verse.verse.toString().includes(searchLower) ||
-			verse.text.toLowerCase().includes(searchLower)
+			event.title.toLowerCase().includes(searchLower) ||
+			event.date.toLowerCase().includes(searchLower) ||
+			event.description.toLowerCase().includes(searchLower)
 		);
 	});
 
@@ -118,7 +115,7 @@ const VerseTable = () => {
 								marginRight: "auto",
 							}}
 						>
-							Ancien testament: versets
+							Liste des événements
 						</Typography>
 
 						<Button
@@ -135,21 +132,21 @@ const VerseTable = () => {
 				<Button
 					variant="contained"
 					color="primary"
-					onClick={handleAddVerse}
+					onClick={handleAddEvent}
 					style={{ margin: "10px" }}
 				>
-					Ajouter un verset
+					Ajouter un événement
 				</Button>
 				<Button
 					variant="outlined"
 					color="primary"
 					onClick={handleHome}
-					style={{ margin: "10px" }}
+					style={{ margin: "10px", }}
 				>
 					Dashboard
 				</Button>
 				<TextField
-					label="Rechercher un verset"
+					label="Rechercher un événement"
 					variant="outlined"
 					fullWidth
 					onChange={(e) => setSearchTerm(e.target.value)}
@@ -158,45 +155,43 @@ const VerseTable = () => {
 				<Table>
 					<TableHead>
 						<TableRow>
-							<TableCell>Livre</TableCell>
-							<TableCell>Chapitre</TableCell>
-							<TableCell>Verset</TableCell>
-							<TableCell>Texte</TableCell>
+							<TableCell>Titre</TableCell>
+							<TableCell>Date</TableCell>
+							<TableCell>Description</TableCell>
 							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{filteredVerses.length > 0 ? (
-							filteredVerses
-								.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) // Pagination logic
-								.map((verse) => (
-									<TableRow key={verse._id}>
-										<TableCell>{verse.book}</TableCell>
-										<TableCell>{verse.chapter}</TableCell>
-										<TableCell>{verse.verse}</TableCell>
-										<TableCell>{verse.text}</TableCell>
+						{filteredEvents.length > 0 ? (
+							filteredEvents
+								.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) // Logique de pagination
+								.map((event) => (
+									<TableRow key={event._id}>
+										<TableCell>{event.title}</TableCell>
+										<TableCell>{event.date}</TableCell>
+										<TableCell>{event.description}</TableCell>
 										<TableCell>
 											<IconButton
 												color="primary"
-												onClick={() => handleEditVerse(verse._id)}
+												onClick={() => handleEditEvent(event._id)}
 											>
 												<i className="fas fa-edit"></i>{" "}
-												{/* Icone de modification */}
+												{/* Icône de modification */}
 											</IconButton>
 											<IconButton
 												color="secondary"
-												onClick={() => handleDeleteVerse(verse._id)}
+												onClick={() => handleDeleteEvent(event._id)}
 											>
 												<i className="fas fa-trash-alt"></i>{" "}
-												{/* Icone de suppression */}
+												{/* Icône de suppression */}
 											</IconButton>
 										</TableCell>
 									</TableRow>
 								))
 						) : (
 							<TableRow>
-								<TableCell colSpan={5} align="center">
-									Aucun verset trouvé
+								<TableCell colSpan={4} align="center">
+									Aucun événement trouvé
 								</TableCell>
 							</TableRow>
 						)}
@@ -205,7 +200,7 @@ const VerseTable = () => {
 				<TablePagination
 					rowsPerPageOptions={[5, 10, 25]}
 					component="div"
-					count={filteredVerses.length}
+					count={filteredEvents.length}
 					rowsPerPage={rowsPerPage}
 					page={page}
 					onPageChange={handleChangePage}
@@ -216,4 +211,4 @@ const VerseTable = () => {
 	);
 };
 
-export default VerseTable;
+export default EventTable;

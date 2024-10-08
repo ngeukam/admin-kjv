@@ -10,12 +10,12 @@ import {
 	Box,
 	Autocomplete,
 	Toolbar,
-	AppBar,
+	AppBar
 } from "@mui/material";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import useLogout from "../utils/logout";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 
-const EditVerse = () => {
+const EditVerse_n = () => {
 	const { id } = useParams(); // Get the verse ID from the URL
 	const navigate = useNavigate(); // Use navigate for redirection
 	const baseUrl = process.env.REACT_APP_API_BASE_URL;
@@ -96,16 +96,15 @@ const EditVerse = () => {
 	useEffect(() => {
 		const fetchVerse = async () => {
 			try {
-				const token = localStorage.getItem("token");
 				// Fetch the verse by ID
-				const response = await axios.get(`${baseUrl}/bls/retrieve-verse`, {
+				const token = localStorage.getItem("token");
+				const response = await axios.get(`${baseUrl}/newbls/retrieve-verse`, {
 					params: {
 						_id: id,
 					},
 					headers: {
 						Authorization: `Bearer ${token}`, // Include the token in the header
-					},
-					 // Pass the query parameters if needed
+					}, // Pass the query parameters if needed
 				});
 				setVerse(response.data[0]); // Assuming you get an array, take the first element
 			} catch (error) {
@@ -126,7 +125,7 @@ const EditVerse = () => {
 		e.preventDefault();
 		try {
 			// Send a PUT request to update the verse
-			await axios.put(`${baseUrl}/bls/update-verse/${id}`, verse, {
+			await axios.put(`${baseUrl}/newbls/update-verse/${id}`, verse, {
 				headers: {
                     Authorization: `Bearer ${token}`, // Include the token in the header
                 },
@@ -159,7 +158,7 @@ const EditVerse = () => {
 								marginRight: "auto",
 							}}
 						>
-							Ancien testament: Modifier le verset
+							Nouveau testament: Modifier le verset
 						</Typography>
 
 						<Button
@@ -260,4 +259,4 @@ const EditVerse = () => {
 	);
 };
 
-export default EditVerse;
+export default EditVerse_n;

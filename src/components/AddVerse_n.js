@@ -7,15 +7,15 @@ import {
 	Box,
 	Typography,
 	Autocomplete,
-	Toolbar,
 	AppBar,
+	Toolbar
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import useLogout from "../utils/logout";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 
-const AddVerse = () => {
+const AddVerse_n = () => {
 	const navigate = useNavigate();
 	const [book, setBook] = useState(null);
 	const [chapter, setChapter] = useState("");
@@ -95,7 +95,7 @@ const AddVerse = () => {
 	];
 
 	const handleGoToVerseTable = () => {
-		navigate("/versetable");
+		navigate("/nbls-versetable");
 	};
 	// Function to handle form submission
 	const handleSubmit = async (e) => {
@@ -107,7 +107,7 @@ const AddVerse = () => {
 		}
 
 		try {
-			const response = await axios.post(`${baseUrl}/bls/create-verse`, {
+			const response = await axios.post(`${baseUrl}/newbls/create-verse`, {
 				book: book.label, // Use label from Autocomplete
 				chapter,
 				verse,
@@ -155,7 +155,7 @@ const AddVerse = () => {
 								marginRight: "auto",
 							}}
 						>
-							Ancien testament: Ajouter un verset
+							Nouveau testament: Ajouter un verset
 						</Typography>
 
 						<Button
@@ -282,4 +282,4 @@ const AddVerse = () => {
 	);
 };
 
-export default AddVerse;
+export default AddVerse_n;

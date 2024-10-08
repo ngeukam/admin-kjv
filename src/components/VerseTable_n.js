@@ -11,17 +11,17 @@ import {
 	TextField,
 	TablePagination,
 	Button,
-	Box,
 	AppBar,
 	Toolbar,
+	Box,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Pour la navigation
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css"; // Pour les icônes FontAwesome
-import useLogout from "../utils/logout";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import useLogout from "../utils/logout";
 
-const VerseTable = () => {
+const VerseTable_n = () => {
 	const [verses, setVerses] = useState([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [page, setPage] = useState(0); // Gérer la page actuelle
@@ -35,17 +35,18 @@ const VerseTable = () => {
 
 	const fetchVerses = async () => {
 		try {
-			const response = await axios.get(`${baseUrl}/bls/retrieve-verse`, {
+			
+			const response = await axios.get(`${baseUrl}/newbls/retrieve-verse`, {
 				headers: {
 					Authorization: `Bearer ${token}`, // Include the token in the header
 				},
 			});
-			setVerses(response.data);	
+			setVerses(response.data);
 		} catch (error) {
 			if(error.status==404){
 				setVerses([]);
 			}
-			console.error("Error fetching verses:",  error);
+			console.error("Error fetching verses:", error);
 		}
 	};
 
@@ -55,14 +56,12 @@ const VerseTable = () => {
 		);
 		if (confirmDelete) {
 			try {
-				await axios.delete(`${baseUrl}/bls/delete-verse/${id}`, {
+				await axios.delete(`${baseUrl}/newbls/delete-verse/${id}`, {
 					headers: {
 						Authorization: `Bearer ${token}`, // Include the token in the header
 					},
 				});
-				fetchVerses(); // Store fetched verses
-				
-				
+				fetchVerses(); // Rafraîchir la liste des versets après la suppression
 			} catch (error) {
 				console.error("Error deleting verse:", error);
 			}
@@ -70,11 +69,11 @@ const VerseTable = () => {
 	};
 
 	const handleEditVerse = (id) => {
-		navigate(`/edit-verse/${id}`);
+		navigate(`/nbls-edit-verse/${id}`);
 	};
 
 	const handleAddVerse = () => {
-		navigate("/add-verse");
+		navigate("/nbls-add-verse");
 	};
 
 	const handleHome = () => {
@@ -118,7 +117,7 @@ const VerseTable = () => {
 								marginRight: "auto",
 							}}
 						>
-							Ancien testament: versets
+							Nouveau testament: versets
 						</Typography>
 
 						<Button
@@ -216,4 +215,4 @@ const VerseTable = () => {
 	);
 };
 
-export default VerseTable;
+export default VerseTable_n;

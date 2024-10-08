@@ -11,74 +11,70 @@ import {
 	TextField,
 	TablePagination,
 	Button,
-	Box,
-	AppBar,
-	Toolbar,
+    Box,
+    AppBar,
+    Toolbar
 } from "@mui/material";
-import { useNavigate } from "react-router-dom"; // Pour la navigation
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css"; // Pour les icônes FontAwesome
 import useLogout from "../utils/logout";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 
-const VerseTable = () => {
-	const [verses, setVerses] = useState([]);
+
+const PrayerTable = () => {
+	const [prayers, setPrayers] = useState([]);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [page, setPage] = useState(0); // Gérer la page actuelle
-	const [rowsPerPage, setRowsPerPage] = useState(5); // Gérer le nombre de lignes par page
-	const navigate = useNavigate(); // Utilisez useNavigate pour la navigation
+	const [page, setPage] = useState(0);
+	const [rowsPerPage, setRowsPerPage] = useState(5);
+	const navigate = useNavigate();
 	const baseUrl = process.env.REACT_APP_API_BASE_URL;
-	const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 	useEffect(() => {
-		fetchVerses();
+		fetchPrayers();
 	}, []);
 
-	const fetchVerses = async () => {
+	const fetchPrayers = async () => {
 		try {
-			const response = await axios.get(`${baseUrl}/bls/retrieve-verse`, {
-				headers: {
+			const response = await axios.get(`${baseUrl}/prayer/prayers`, {
+                headers: {
 					Authorization: `Bearer ${token}`, // Include the token in the header
 				},
-			});
-			setVerses(response.data);	
+            }); // URL pour récupérer les prières
+			setPrayers(response.data);
 		} catch (error) {
-			if(error.status==404){
-				setVerses([]);
-			}
-			console.error("Error fetching verses:",  error);
+			console.error("Error fetching prayers:", error);
 		}
 	};
 
-	const handleDeleteVerse = async (id) => {
+	const handleDeletePrayer = async (id) => {
 		const confirmDelete = window.confirm(
-			"Voulez-vous vraiment supprimer ce verset ?"
+			"Voulez-vous vraiment supprimer cette prière ?"
 		);
 		if (confirmDelete) {
 			try {
-				await axios.delete(`${baseUrl}/bls/delete-verse/${id}`, {
-					headers: {
-						Authorization: `Bearer ${token}`, // Include the token in the header
-					},
-				});
-				fetchVerses(); // Store fetched verses
-				
-				
+				await axios.delete(`${baseUrl}/prayer/delete-prayer/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Include the token in the header
+                    },
+                }); // URL pour supprimer une prière
+				fetchPrayers(); // Rafraîchir la liste après suppression
 			} catch (error) {
-				console.error("Error deleting verse:", error);
+				console.error("Error deleting prayer:", error);
 			}
 		}
 	};
 
-	const handleEditVerse = (id) => {
-		navigate(`/edit-verse/${id}`);
+	const handleEditPrayer = (id) => {
+		navigate(`/edit-prayer/${id}`); // Naviguer vers la page d'édition d'une prière
 	};
 
-	const handleAddVerse = () => {
-		navigate("/add-verse");
+	const handleAddPrayer = () => {
+		navigate("/add-prayer"); // Naviguer vers la page d'ajout d'une prière
 	};
 
 	const handleHome = () => {
-		navigate("/");
+		navigate("/"); // Naviguer vers la page d'accueil
 	};
 
 	const handleChangePage = (event, newPage) => {
@@ -87,16 +83,16 @@ const VerseTable = () => {
 
 	const handleChangeRowsPerPage = (event) => {
 		setRowsPerPage(parseInt(event.target.value, 10));
-		setPage(0); // Revenir à la première page
+		setPage(0);
 	};
 
-	const filteredVerses = verses.filter((verse) => {
+	const filteredPrayers = prayers.filter((prayer) => {
 		const searchLower = searchTerm.toLowerCase();
 		return (
-			verse.book.toLowerCase().includes(searchLower) ||
-			verse.chapter.toString().includes(searchLower) ||
-			verse.verse.toString().includes(searchLower) ||
-			verse.text.toLowerCase().includes(searchLower)
+			prayer.title.toLowerCase().includes(searchLower) ||
+			prayer.author.toLowerCase().includes(searchLower) ||
+			prayer.date.toLowerCase().includes(searchLower) ||
+			prayer.description.toLowerCase().includes(searchLower)
 		);
 	});
 
@@ -118,7 +114,7 @@ const VerseTable = () => {
 								marginRight: "auto",
 							}}
 						>
-							Ancien testament: versets
+							Liste des prières
 						</Typography>
 
 						<Button
@@ -135,21 +131,21 @@ const VerseTable = () => {
 				<Button
 					variant="contained"
 					color="primary"
-					onClick={handleAddVerse}
+					onClick={handleAddPrayer}
 					style={{ margin: "10px" }}
 				>
-					Ajouter un verset
+					Ajouter une prière
 				</Button>
 				<Button
 					variant="outlined"
 					color="primary"
 					onClick={handleHome}
-					style={{ margin: "10px" }}
+					style={{ margin: "10px", }}
 				>
 					Dashboard
 				</Button>
 				<TextField
-					label="Rechercher un verset"
+					label="Rechercher une prière"
 					variant="outlined"
 					fullWidth
 					onChange={(e) => setSearchTerm(e.target.value)}
@@ -158,45 +154,43 @@ const VerseTable = () => {
 				<Table>
 					<TableHead>
 						<TableRow>
-							<TableCell>Livre</TableCell>
-							<TableCell>Chapitre</TableCell>
-							<TableCell>Verset</TableCell>
-							<TableCell>Texte</TableCell>
+							<TableCell>Titre</TableCell>
+							<TableCell>Auteur</TableCell>
+							<TableCell>Description</TableCell>
 							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{filteredVerses.length > 0 ? (
-							filteredVerses
-								.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) // Pagination logic
-								.map((verse) => (
-									<TableRow key={verse._id}>
-										<TableCell>{verse.book}</TableCell>
-										<TableCell>{verse.chapter}</TableCell>
-										<TableCell>{verse.verse}</TableCell>
-										<TableCell>{verse.text}</TableCell>
+						{filteredPrayers.length > 0 ? (
+							filteredPrayers
+								.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+								.map((prayer) => (
+									<TableRow key={prayer._id}>
+										<TableCell>{prayer.title}</TableCell>
+										<TableCell>{prayer.author}</TableCell>
+										<TableCell>{prayer.description}</TableCell>
 										<TableCell>
 											<IconButton
 												color="primary"
-												onClick={() => handleEditVerse(verse._id)}
+												onClick={() => handleEditPrayer(prayer._id)}
 											>
 												<i className="fas fa-edit"></i>{" "}
-												{/* Icone de modification */}
+												{/* Icône de modification */}
 											</IconButton>
 											<IconButton
 												color="secondary"
-												onClick={() => handleDeleteVerse(verse._id)}
+												onClick={() => handleDeletePrayer(prayer._id)}
 											>
 												<i className="fas fa-trash-alt"></i>{" "}
-												{/* Icone de suppression */}
+												{/* Icône de suppression */}
 											</IconButton>
 										</TableCell>
 									</TableRow>
 								))
 						) : (
 							<TableRow>
-								<TableCell colSpan={5} align="center">
-									Aucun verset trouvé
+								<TableCell colSpan={4} align="center">
+									Aucune prière trouvée
 								</TableCell>
 							</TableRow>
 						)}
@@ -205,7 +199,7 @@ const VerseTable = () => {
 				<TablePagination
 					rowsPerPageOptions={[5, 10, 25]}
 					component="div"
-					count={filteredVerses.length}
+					count={filteredPrayers.length}
 					rowsPerPage={rowsPerPage}
 					page={page}
 					onPageChange={handleChangePage}
@@ -216,4 +210,4 @@ const VerseTable = () => {
 	);
 };
 
-export default VerseTable;
+export default PrayerTable;
