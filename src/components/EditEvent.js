@@ -10,6 +10,7 @@ import {
 	Box,
 	Toolbar,
 	AppBar,
+	Grid,
 } from "@mui/material";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import useLogout from "../utils/logout";
@@ -23,6 +24,7 @@ const EditEvent = () => {
 		date: "",
 		description: "",
 	});
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -58,24 +60,30 @@ const EditEvent = () => {
 	};
 
 	const handleSubmit = async (e) => {
+		setLoading(true);
 		const token = localStorage.getItem("token");
 		e.preventDefault();
 		try {
 			// Envoyer une requête PUT pour mettre à jour l'événement
 			await axios.put(`${baseUrl}/event/update-event/${id}`, event, {
 				headers: {
-                    Authorization: `Bearer ${token}`, // Include the token in the header
-                },
+					Authorization: `Bearer ${token}`, // Include the token in the header
+				},
 			});
 			toast.success("Événement modifié avec succès !");
 			//navigate("/eventtable"); // Rediriger vers la page principale après la mise à jour
 		} catch (error) {
 			console.error("Error updating event:", error);
+		} finally {
+			setLoading(false); // Arrête le chargement dans tous les cas
 		}
 	};
 
 	const handleGoBack = () => {
 		navigate(-1); // Retourner à la page précédente
+	};
+	const handleClick = () => {
+		navigate("/");
 	};
 
 	return (
@@ -83,20 +91,13 @@ const EditEvent = () => {
 			<Box sx={{ marginBottom: 2 }}>
 				<AppBar position="static">
 					<Toolbar sx={{ justifyContent: "space-between" }}>
-						<Typography variant="h6" sx={{ flexGrow: 1 }}>
-							Admin Panel
-						</Typography>
-
 						<Typography
 							variant="h6"
-							sx={{
-								textAlign: "center",
-								flexGrow: 1,
-								marginLeft: "auto",
-								marginRight: "auto",
-							}}
+							sx={{ flexGrow: 1 }}
+							onClick={handleClick}
+							style={{ cursor: "pointer" }}
 						>
-							Modifier un événement
+							Admin Panel
 						</Typography>
 
 						<Button
@@ -109,75 +110,91 @@ const EditEvent = () => {
 					</Toolbar>
 				</AppBar>
 			</Box>
-
-			<Box
-				sx={{
-					maxWidth: 500,
-					margin: "0 auto",
-					padding: 4,
-					backgroundColor: "#f4f4f4",
-					borderRadius: 2,
-					boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-				}}
+			<Grid
+				container
+				justifyContent="center"
+				alignItems="center"
+				style={{ marginTop: "80px" }}
 			>
-				<ToastContainer
-					position="top-right"
-					autoClose={3000}
-					hideProgressBar={false}
-					newestOnTop={false}
-					closeOnClick
-					rtl={false}
-					pauseOnFocusLoss
-					draggable
-					pauseOnHover
-				/>
-				<form onSubmit={handleSubmit}>
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							label="Titre"
-							name="title"
-							value={event.title}
-							onChange={handleChange}
-							fullWidth
-							required
-						/>
-					</Box>
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							label="Date"
-							name="date"
-							type="date"
-							value={event.date}
-							onChange={handleChange}
-							fullWidth
-							required
-						/>
-					</Box>
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							label="Description"
-							name="description"
-							value={event.description}
-							onChange={handleChange}
-							fullWidth
-							required
-							multiline
-							rows={4}
-						/>
-					</Box>
-					<Button type="submit" variant="contained" color="primary">
-						Modifier
-					</Button>
-					<Button
-						variant="outlined"
-						color="secondary"
-						onClick={handleGoBack}
-						style={{ marginLeft: "10px" }} // Ajout d'un espacement
-					>
-						Retour
-					</Button>
-				</form>
-			</Box>
+				<Box
+					sx={{
+						padding: "10px",
+						width: "500px", // Defined width
+						borderRadius: "8px",
+						boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+					}}
+				>
+					<ToastContainer
+						position="top-right"
+						autoClose={3000}
+						hideProgressBar={false}
+						newestOnTop={false}
+						closeOnClick
+						rtl={false}
+						pauseOnFocusLoss
+						draggable
+						pauseOnHover
+					/>
+					<form onSubmit={handleSubmit}>
+						<Typography
+							variant="h4"
+							style={{ marginBottom: "16px", textAlign: "center" }}
+						>
+							Modifier un événement
+						</Typography>
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								label="Titre"
+								name="title"
+								value={event.title}
+								onChange={handleChange}
+								fullWidth
+								required
+							/>
+						</Box>
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								label="Date"
+								name="date"
+								type="date"
+								value={event.date}
+								onChange={handleChange}
+								fullWidth
+								required
+							/>
+						</Box>
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								label="Description"
+								name="description"
+								value={event.description}
+								onChange={handleChange}
+								fullWidth
+								required
+								multiline
+								rows={4}
+							/>
+						</Box>
+						<Button
+							type="submit"
+							variant="contained"
+							color="primary"
+							sx={{ mb: { xs: 1, sm: 0 } }}
+							disabled={loading}
+						>
+							{loading ? "Modification..." : "Modifier"}
+						</Button>
+						<Button
+							variant="outlined"
+							color="secondary"
+							onClick={handleGoBack}
+							style={{ marginLeft: "10px" }} // Ajout d'un espacement
+						>
+							Retour
+						</Button>
+					</form>
+				</Box>
+			</Grid>
 		</Box>
 	);
 };

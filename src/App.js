@@ -14,15 +14,16 @@ import PrayerTable from "./components/PrayerTable";
 import EditPrayer from "./components/EditPrayer";
 import ProtectedRoute from "./middleware/ProtectedRoute";
 import Login from "./components/Login";
-
+import FormAdmin from "./components/Form";
+import FormListAdmin from "./components/FormList";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
+import FormEditor from "./components/FormEditor";
+
 function App() {
   return (
     <Router>
         <Routes>
             <Route path="/login" element={<Login />} /> 
-
              {/* Routes protégées */}
             <Route path="/" element={<ProtectedRoute><FeaturesGrid /></ProtectedRoute>} />
             <Route path="/add-verse" element={<ProtectedRoute><AddVerse /></ProtectedRoute>} />
@@ -40,6 +41,10 @@ function App() {
             <Route path="/add-prayer" element={<ProtectedRoute><AddPrayer /></ProtectedRoute>} />
             <Route path="/prayertable" element={<ProtectedRoute><PrayerTable /></ProtectedRoute>} />
             <Route path="/edit-prayer/:id" element={<ProtectedRoute><EditPrayer /></ProtectedRoute>} />
+
+            <Route path="/form" element={<ProtectedRoute><FormAdmin /></ProtectedRoute>} />
+            <Route path="/form-list" element={<ProtectedRoute><FormListAdmin /></ProtectedRoute>} />
+            <Route path="/edit-form/:id" element={<ProtectedRoute><FormEditor /></ProtectedRoute>} />
         </Routes>
     </Router>
 );

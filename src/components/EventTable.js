@@ -28,6 +28,7 @@ const EventTable = () => {
 	const [page, setPage] = useState(0); // Gérer la page actuelle
 	const [rowsPerPage, setRowsPerPage] = useState(5); // Gérer le nombre de lignes par page
 	const navigate = useNavigate();
+	const [loading, setLoading] = useState(false);
 	const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
 	useEffect(() => {
@@ -54,15 +55,18 @@ const EventTable = () => {
 			"Voulez-vous vraiment supprimer cet événement ?"
 		);
 		if (confirmDelete) {
+			setLoading(true);
 			try {
 				await axios.delete(`${baseUrl}/event/delete-event/${id}`, {
                     headers: {
 						Authorization: `Bearer ${token}`, // Include the token in the header
 					},
-                }); // Remplacez par votre URL d'API pour la suppression
+                });
 				fetchEvents(); // Rafraîchir la liste des événements après la suppression
 			} catch (error) {
 				console.error("Error deleting event:", error);
+			}finally {
+				setLoading(false);
 			}
 		}
 	};
@@ -96,31 +100,68 @@ const EventTable = () => {
 			event.description.toLowerCase().includes(searchLower)
 		);
 	});
+	const handleClick = () => {
+		navigate("/");
+	};
+	const logout = useLogout();
+	const handleLogout = () => {
+		logout();
+	};
 
+	if (loading)
+		return (
+			<Box>
+				<Box sx={{ marginBottom: 2 }}>
+					<AppBar position="static">
+						<Toolbar sx={{ justifyContent: "space-between" }}>
+							<Typography
+								variant="h6"
+								sx={{ flexGrow: 1 }}
+								onClick={handleClick}
+								style={{ cursor: "pointer" }}
+							>
+								Admin Panel
+							</Typography>
+							<Button
+								color="inherit"
+								onClick={handleLogout}
+								sx={{ marginLeft: "auto" }}
+							>
+								<PowerSettingsNewIcon />
+							</Button>
+						</Toolbar>
+					</AppBar>
+				</Box>
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						height: "100vh", // Prend toute la hauteur de la fenêtre
+						textAlign: "center",
+					}}
+				>
+					<h2>Suppression en cours...</h2>
+				</div>
+			</Box>
+		);
 	return (
 		<Box>
 			<Box sx={{ marginBottom: 2 }}>
 				<AppBar position="static">
 					<Toolbar sx={{ justifyContent: "space-between" }}>
-						<Typography variant="h6" sx={{ flexGrow: 1 }}>
-							Admin Panel
-						</Typography>
-
-						<Typography
+					<Typography
 							variant="h6"
-							sx={{
-								textAlign: "center",
-								flexGrow: 1,
-								marginLeft: "auto",
-								marginRight: "auto",
-							}}
+							sx={{ flexGrow: 1 }}
+							onClick={handleClick}
+							style={{ cursor: "pointer" }}
 						>
-							Liste des événements
+							Admin Panel
 						</Typography>
 
 						<Button
 							color="inherit"
-							onClick={useLogout()}
+							onClick={handleLogout}
 							sx={{ marginLeft: "auto" }}
 						>
 							<PowerSettingsNewIcon />

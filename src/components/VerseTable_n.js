@@ -28,22 +28,42 @@ const VerseTable_n = () => {
 	const [rowsPerPage, setRowsPerPage] = useState(5); // Gérer le nombre de lignes par page
 	const navigate = useNavigate(); // Utilisez useNavigate pour la navigation
 	const baseUrl = process.env.REACT_APP_API_BASE_URL;
+	const [loading, setLoading] = useState(false);
 	const token = localStorage.getItem("token");
+	const bookOrder = [
+		"Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens",
+		"2 Corinthiens", "Galates", "Éphésiens", "Philippiens", "Colossiens",
+		"1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée",
+		"Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre",
+		"1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse",
+	  ];
 	useEffect(() => {
 		fetchVerses();
 	}, []);
 
 	const fetchVerses = async () => {
 		try {
-			
 			const response = await axios.get(`${baseUrl}/newbls/retrieve-verse`, {
 				headers: {
 					Authorization: `Bearer ${token}`, // Include the token in the header
 				},
 			});
-			setVerses(response.data);
+			const sortedVerses = response.data.sort((a, b) => {
+				const bookIndexA = bookOrder.indexOf(a.book);
+				const bookIndexB = bookOrder.indexOf(b.book);
+	
+				if (bookIndexA === bookIndexB) {
+					if (a.chapter === b.chapter) {
+						return a.verse - b.verse; // Trie par verset
+					}
+					return a.chapter - b.chapter; // Trie par chapitre
+				}
+				return bookIndexA - bookIndexB; // Trie par livre
+			});
+
+			setVerses(sortedVerses);
 		} catch (error) {
-			if(error.status==404){
+			if (error.response && error.response.status === 404) {
 				setVerses([]);
 			}
 			console.error("Error fetching verses:", error);
@@ -55,6 +75,7 @@ const VerseTable_n = () => {
 			"Voulez-vous vraiment supprimer ce verset ?"
 		);
 		if (confirmDelete) {
+			setLoading(true);
 			try {
 				await axios.delete(`${baseUrl}/newbls/delete-verse/${id}`, {
 					headers: {
@@ -64,6 +85,8 @@ const VerseTable_n = () => {
 				fetchVerses(); // Rafraîchir la liste des versets après la suppression
 			} catch (error) {
 				console.error("Error deleting verse:", error);
+			} finally {
+				setLoading(false);
 			}
 		}
 	};
@@ -98,31 +121,68 @@ const VerseTable_n = () => {
 			verse.text.toLowerCase().includes(searchLower)
 		);
 	});
+	const handleClick = () => {
+		navigate("/");
+	};
+	const logout = useLogout();
+	const handleLogout = () => {
+		logout();
+	};
+
+	if (loading)
+		return (
+			<Box>
+				<Box sx={{ marginBottom: 2 }}>
+					<AppBar position="static">
+						<Toolbar sx={{ justifyContent: "space-between" }}>
+							<Typography
+								variant="h6"
+								sx={{ flexGrow: 1 }}
+								onClick={handleClick}
+								style={{ cursor: "pointer" }}
+							>
+								Admin Panel
+							</Typography>
+							<Button
+								color="inherit"
+								onClick={handleLogout}
+								sx={{ marginLeft: "auto" }}
+							>
+								<PowerSettingsNewIcon />
+							</Button>
+						</Toolbar>
+					</AppBar>
+				</Box>
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						height: "100vh", // Prend toute la hauteur de la fenêtre
+						textAlign: "center",
+					}}
+				>
+					<h2>Suppression en cours...</h2>
+				</div>
+			</Box>
+		);
 
 	return (
 		<Box>
 			<Box sx={{ marginBottom: 2 }}>
 				<AppBar position="static">
 					<Toolbar sx={{ justifyContent: "space-between" }}>
-						<Typography variant="h6" sx={{ flexGrow: 1 }}>
-							Admin Panel
-						</Typography>
-
 						<Typography
 							variant="h6"
-							sx={{
-								textAlign: "center",
-								flexGrow: 1,
-								marginLeft: "auto",
-								marginRight: "auto",
-							}}
+							sx={{ flexGrow: 1 }}
+							onClick={handleClick}
+							style={{ cursor: "pointer" }}
 						>
-							Nouveau testament: versets
+							Admin Panel
 						</Typography>
-
 						<Button
 							color="inherit"
-							onClick={useLogout()}
+							onClick={handleLogout}
 							sx={{ marginLeft: "auto" }}
 						>
 							<PowerSettingsNewIcon />
@@ -137,7 +197,7 @@ const VerseTable_n = () => {
 					onClick={handleAddVerse}
 					style={{ margin: "10px" }}
 				>
-					Ajouter un verset
+					Nouveau testament: Ajouter un verset
 				</Button>
 				<Button
 					variant="outlined"

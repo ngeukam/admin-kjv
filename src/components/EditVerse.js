@@ -11,6 +11,7 @@ import {
 	Autocomplete,
 	Toolbar,
 	AppBar,
+	Grid,
 } from "@mui/material";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import useLogout from "../utils/logout";
@@ -25,73 +26,47 @@ const EditVerse = () => {
 		verse: "",
 		text: "",
 	});
+	const [loading, setLoading] = useState(false);
 	const bookOptions = [
-		"Genèse",
-		"Exode",
-		"Lévitique",
-		"Nombres",
-		"Deutéronome",
-		"Josué",
-		"Juges",
-		"Ruth",
-		"1 Samuel",
-		"2 Samuel",
-		"1 Rois",
-		"2 Rois",
-		"1 Chroniques",
-		"2 Chroniques",
-		"Esdras",
-		"Néhémie",
-		"Esther",
-		"Job",
-		"Psaumes",
-		"Proverbes",
-		"Ecclésiaste",
-		"Cantique des cantiques",
-		"Ésaïe",
-		"Jérémie",
-		"Lamentations",
-		"Ézéchiel",
-		"Daniel",
-		"Osée",
-		"Joël",
-		"Amos",
-		"Abdias",
-		"Jonas",
-		"Michée",
-		"Nahum",
-		"Habacuc",
-		"Sophonie",
-		"Aggée",
-		"Zacharie",
-		"Malachie",
-		"Matthieu",
-		"Marc",
-		"Luc",
-		"Jean",
-		"Actes",
-		"Romains",
-		"1 Corinthiens",
-		"2 Corinthiens",
-		"Galates",
-		"Éphésiens",
-		"Philippiens",
-		"Colossiens",
-		"1 Thessaloniciens",
-		"2 Thessaloniciens",
-		"1 Timothée",
-		"2 Timothée",
-		"Tite",
-		"Philémon",
-		"Hébreux",
-		"Jacques",
-		"1 Pierre",
-		"2 Pierre",
-		"1 Jean",
-		"2 Jean",
-		"3 Jean",
-		"Jude",
-		"Apocalypse",
+		{ label: "Genèse" },
+		{ label: "Exode" },
+		{ label: "Lévitique" },
+		{ label: "Nombres" },
+		{ label: "Deutéronome" },
+		{ label: "Josué" },
+		{ label: "Juges" },
+		{ label: "Ruth" },
+		{ label: "1 Samuel" },
+		{ label: "2 Samuel" },
+		{ label: "1 Rois" },
+		{ label: "2 Rois" },
+		{ label: "1 Chroniques" },
+		{ label: "2 Chroniques" },
+		{ label: "Esdras" },
+		{ label: "Néhémie" },
+		{ label: "Esther" },
+		{ label: "Job" },
+		{ label: "Psaumes" },
+		{ label: "Proverbes" },
+		{ label: "Ecclésiaste" },
+		{ label: "Cantique des Cantiques" },
+		{ label: "Ésaïe" },
+		{ label: "Jérémie" },
+		{ label: "Lamentations" },
+		{ label: "Ézéchiel" },
+		{ label: "Daniel" },
+		{ label: "Osée" },
+		{ label: "Joël" },
+		{ label: "Amos" },
+		{ label: "Abdias" },
+		{ label: "Jonas" },
+		{ label: "Michée" },
+		{ label: "Nahum" },
+		{ label: "Habacuc" },
+		{ label: "Sophonie" },
+		{ label: "Aggée" },
+		{ label: "Zacharie" },
+		{ label: "Malachie" },
 	];
 	useEffect(() => {
 		const fetchVerse = async () => {
@@ -105,7 +80,7 @@ const EditVerse = () => {
 					headers: {
 						Authorization: `Bearer ${token}`, // Include the token in the header
 					},
-					 // Pass the query parameters if needed
+					// Pass the query parameters if needed
 				});
 				setVerse(response.data[0]); // Assuming you get an array, take the first element
 			} catch (error) {
@@ -122,46 +97,43 @@ const EditVerse = () => {
 	};
 
 	const handleSubmit = async (e) => {
+		setLoading(true);
 		const token = localStorage.getItem("token");
 		e.preventDefault();
 		try {
 			// Send a PUT request to update the verse
 			await axios.put(`${baseUrl}/bls/update-verse/${id}`, verse, {
 				headers: {
-                    Authorization: `Bearer ${token}`, // Include the token in the header
-                },
+					Authorization: `Bearer ${token}`, // Include the token in the header
+				},
 			});
 			toast.success("Verset modifié avec succès !");
 			//navigate("/versetable"); // Redirect to the main page after updating
 		} catch (error) {
 			console.error("Error updating verse:", error);
+		}finally {
+			setLoading(false); // Arrête le chargement dans tous les cas
 		}
 	};
 	const handleGoBack = () => {
 		navigate(-1); // Go back to the previous page
 	};
-
+	const handleClick = () => {
+		navigate("/");
+	};
 	return (
 		<Box>
 			<Box sx={{ marginBottom: 2 }}>
 				<AppBar position="static">
 					<Toolbar sx={{ justifyContent: "space-between" }}>
-						<Typography variant="h6" sx={{ flexGrow: 1 }}>
-							Admin Panel
-						</Typography>
-
 						<Typography
 							variant="h6"
-							sx={{
-								textAlign: "center",
-								flexGrow: 1,
-								marginLeft: "auto",
-								marginRight: "auto",
-							}}
+							sx={{ flexGrow: 1 }}
+							onClick={handleClick}
+							style={{ cursor: "pointer" }}
 						>
-							Ancien testament: Modifier le verset
+							Admin Panel
 						</Typography>
-
 						<Button
 							color="inherit"
 							onClick={useLogout()}
@@ -172,90 +144,107 @@ const EditVerse = () => {
 					</Toolbar>
 				</AppBar>
 			</Box>
-			<Box
-				sx={{
-					maxWidth: 500,
-					margin: "0 auto",
-					padding: 4,
-					backgroundColor: "#f4f4f4",
-					borderRadius: 2,
-					boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-				}}
+			<Grid
+				container
+				justifyContent="center"
+				alignItems="center"
+				style={{ marginTop: "20px" }}
 			>
-				<ToastContainer
-					position="top-right" // You can adjust the position
-					autoClose={3000} // Duration before the toast disappears
-					hideProgressBar={false} // Show progress bar
-					newestOnTop={false} // New toasts appear on top
-					closeOnClick // Close toast on click
-					rtl={false} // Right to left
-					pauseOnFocusLoss // Pause when the window is not focused
-					draggable // Enable dragging
-					pauseOnHover // Pause when hovering
-				/>
-				<form onSubmit={handleSubmit}>
-					<Box sx={{ marginBottom: 2 }}>
-						<Autocomplete
-							options={bookOptions}
-							value={verse.book}
-							onChange={(event, newValue) =>
-								setVerse({ ...verse, book: newValue })
-							}
-							renderInput={(params) => (
-								<TextField
-									{...params}
-									label="Livre"
-									placeholder="Sélectionner un livre"
-									fullWidth
-								/>
-							)}
-						/>
-					</Box>
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							label="Chapitre"
-							name="chapter"
-							value={verse.chapter}
-							onChange={handleChange}
-							fullWidth
-							required
-						/>
-					</Box>
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							label="Verset"
-							name="verse"
-							value={verse.verse}
-							onChange={handleChange}
-							fullWidth
-							required
-						/>
-					</Box>
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							label="Texte"
-							name="text"
-							value={verse.text}
-							onChange={handleChange}
-							fullWidth
-							required
-							multiline
-							rows={4}
-						/>
-					</Box>
-					<Button type="submit" variant="contained" color="primary">
-						Modifier
-					</Button>
-					<Button
-						variant="outlined"
-						color="secondary"
-						onClick={handleGoBack}
-						style={{ marginLeft: "10px" }} // Ajout d'un espacement
-					>
-						Retour
-					</Button>
-				</form>
-			</Box>
+				<Box
+					sx={{
+						padding: "10px",
+						width: "500px", // Defined width
+						borderRadius: "8px",
+						boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+					}}
+				>
+					<ToastContainer
+						position="top-right" // You can adjust the position
+						autoClose={3000} // Duration before the toast disappears
+						hideProgressBar={false} // Show progress bar
+						newestOnTop={false} // New toasts appear on top
+						closeOnClick // Close toast on click
+						rtl={false} // Right to left
+						pauseOnFocusLoss // Pause when the window is not focused
+						draggable // Enable dragging
+						pauseOnHover // Pause when hovering
+					/>
+					<form onSubmit={handleSubmit}>
+						<Typography
+							variant="h4"
+							style={{ marginBottom: "16px", textAlign: "center" }}
+						>
+							Ancien testament: Modifier le verset
+						</Typography>
+						<Box sx={{ marginBottom: 2 }}>
+							<Autocomplete
+								options={bookOptions}
+								value={verse.book}
+								onChange={(event, newValue) =>
+									setVerse({ ...verse, book: newValue })
+								}
+								renderInput={(params) => (
+									<TextField
+										{...params}
+										label="Livre"
+										placeholder="Sélectionner un livre"
+										fullWidth
+									/>
+								)}
+							/>
+						</Box>
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								label="Chapitre"
+								name="chapter"
+								value={verse.chapter}
+								onChange={handleChange}
+								fullWidth
+								required
+							/>
+						</Box>
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								label="Verset"
+								name="verse"
+								value={verse.verse}
+								onChange={handleChange}
+								fullWidth
+								required
+							/>
+						</Box>
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								label="Texte"
+								name="text"
+								value={verse.text}
+								onChange={handleChange}
+								fullWidth
+								required
+								multiline
+								rows={4}
+							/>
+						</Box>
+						<Button
+							type="submit"
+							variant="contained"
+							color="primary"
+							sx={{ mb: { xs: 1, sm: 0 } }}
+							disabled={loading}
+						>
+							{loading ? "Modification..." : "Modifier"}
+						</Button>
+						<Button
+							variant="outlined"
+							color="secondary"
+							onClick={handleGoBack}
+							style={{ marginLeft: "10px" }} // Ajout d'un espacement
+						>
+							Retour
+						</Button>
+					</form>
+				</Box>
+			</Grid>
 		</Box>
 	);
 };

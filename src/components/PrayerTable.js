@@ -11,16 +11,15 @@ import {
 	TextField,
 	TablePagination,
 	Button,
-    Box,
-    AppBar,
-    Toolbar
+	Box,
+	AppBar,
+	Toolbar,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css"; // Pour les icônes FontAwesome
 import useLogout from "../utils/logout";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
-
 
 const PrayerTable = () => {
 	const [prayers, setPrayers] = useState([]);
@@ -29,7 +28,9 @@ const PrayerTable = () => {
 	const [rowsPerPage, setRowsPerPage] = useState(5);
 	const navigate = useNavigate();
 	const baseUrl = process.env.REACT_APP_API_BASE_URL;
-    const token = localStorage.getItem("token");
+	const token = localStorage.getItem("token");
+	const [loading, setLoading] = useState(false);
+
 	useEffect(() => {
 		fetchPrayers();
 	}, []);
@@ -37,10 +38,10 @@ const PrayerTable = () => {
 	const fetchPrayers = async () => {
 		try {
 			const response = await axios.get(`${baseUrl}/prayer/prayers`, {
-                headers: {
+				headers: {
 					Authorization: `Bearer ${token}`, // Include the token in the header
 				},
-            }); // URL pour récupérer les prières
+			}); // URL pour récupérer les prières
 			setPrayers(response.data);
 		} catch (error) {
 			console.error("Error fetching prayers:", error);
@@ -52,15 +53,18 @@ const PrayerTable = () => {
 			"Voulez-vous vraiment supprimer cette prière ?"
 		);
 		if (confirmDelete) {
+			setLoading(true);
 			try {
 				await axios.delete(`${baseUrl}/prayer/delete-prayer/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // Include the token in the header
-                    },
-                }); // URL pour supprimer une prière
+					headers: {
+						Authorization: `Bearer ${token}`, // Include the token in the header
+					},
+				}); // URL pour supprimer une prière
 				fetchPrayers(); // Rafraîchir la liste après suppression
 			} catch (error) {
 				console.error("Error deleting prayer:", error);
+			}finally {
+				setLoading(false);
 			}
 		}
 	};
@@ -95,31 +99,67 @@ const PrayerTable = () => {
 			prayer.description.toLowerCase().includes(searchLower)
 		);
 	});
-
+	const handleClick = () => {
+		navigate("/");
+	};
+	const logout = useLogout();
+	const handleLogout = () => {
+		logout();
+	};
+	if (loading)
+		return (
+			<Box>
+				<Box sx={{ marginBottom: 2 }}>
+					<AppBar position="static">
+						<Toolbar sx={{ justifyContent: "space-between" }}>
+							<Typography
+								variant="h6"
+								sx={{ flexGrow: 1 }}
+								onClick={handleClick}
+								style={{ cursor: "pointer" }}
+							>
+								Admin Panel
+							</Typography>
+							<Button
+								color="inherit"
+								onClick={handleLogout}
+								sx={{ marginLeft: "auto" }}
+							>
+								<PowerSettingsNewIcon />
+							</Button>
+						</Toolbar>
+					</AppBar>
+				</Box>
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						height: "100vh", // Prend toute la hauteur de la fenêtre
+						textAlign: "center",
+					}}
+				>
+					<h2>Suppression en cours...</h2>
+				</div>
+			</Box>
+		);
 	return (
 		<Box>
 			<Box sx={{ marginBottom: 2 }}>
 				<AppBar position="static">
 					<Toolbar sx={{ justifyContent: "space-between" }}>
-						<Typography variant="h6" sx={{ flexGrow: 1 }}>
-							Admin Panel
-						</Typography>
-
 						<Typography
 							variant="h6"
-							sx={{
-								textAlign: "center",
-								flexGrow: 1,
-								marginLeft: "auto",
-								marginRight: "auto",
-							}}
+							sx={{ flexGrow: 1 }}
+							onClick={handleClick}
+							style={{ cursor: "pointer" }}
 						>
-							Liste des prières
+							Admin Panel
 						</Typography>
 
 						<Button
 							color="inherit"
-							onClick={useLogout()}
+							onClick={handleLogout}
 							sx={{ marginLeft: "auto" }}
 						>
 							<PowerSettingsNewIcon />
@@ -140,7 +180,7 @@ const PrayerTable = () => {
 					variant="outlined"
 					color="primary"
 					onClick={handleHome}
-					style={{ margin: "10px", }}
+					style={{ margin: "10px" }}
 				>
 					Dashboard
 				</Button>

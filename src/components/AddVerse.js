@@ -9,6 +9,7 @@ import {
 	Autocomplete,
 	Toolbar,
 	AppBar,
+	Grid,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +25,8 @@ const AddVerse = () => {
 	const [message, setMessage] = useState("");
 	const baseUrl = process.env.REACT_APP_API_BASE_URL;
 	const token = localStorage.getItem("token");
+	const [loading, setLoading] = useState(false);
+
 	// List of French Bible books for the dropdown
 	const bookOptions = [
 		{ label: "Genèse" },
@@ -65,33 +68,6 @@ const AddVerse = () => {
 		{ label: "Aggée" },
 		{ label: "Zacharie" },
 		{ label: "Malachie" },
-		{ label: "Matthieu" },
-		{ label: "Marc" },
-		{ label: "Luc" },
-		{ label: "Jean" },
-		{ label: "Actes" },
-		{ label: "Romains" },
-		{ label: "1 Corinthiens" },
-		{ label: "2 Corinthiens" },
-		{ label: "Galates" },
-		{ label: "Éphésiens" },
-		{ label: "Philippiens" },
-		{ label: "Colossiens" },
-		{ label: "1 Thessaloniciens" },
-		{ label: "2 Thessaloniciens" },
-		{ label: "1 Timothée" },
-		{ label: "2 Timothée" },
-		{ label: "Tite" },
-		{ label: "Philémon" },
-		{ label: "Hébreux" },
-		{ label: "Jacques" },
-		{ label: "1 Pierre" },
-		{ label: "2 Pierre" },
-		{ label: "1 Jean" },
-		{ label: "2 Jean" },
-		{ label: "3 Jean" },
-		{ label: "Jude" },
-		{ label: "Apocalypse" },
 	];
 
 	const handleGoToVerseTable = () => {
@@ -99,6 +75,7 @@ const AddVerse = () => {
 	};
 	// Function to handle form submission
 	const handleSubmit = async (e) => {
+		setLoading(true);
 		e.preventDefault();
 		// Validation to check if all fields are filled
 		if (!book || !chapter || !verse || !text) {
@@ -107,16 +84,20 @@ const AddVerse = () => {
 		}
 
 		try {
-			const response = await axios.post(`${baseUrl}/bls/create-verse`, {
-				book: book.label, // Use label from Autocomplete
-				chapter,
-				verse,
-				text,
-			},{
-				headers: {
-					Authorization: `Bearer ${token}`, // Include the token in the header
+			const response = await axios.post(
+				`${baseUrl}/bls/create-verse`,
+				{
+					book: book.label, // Use label from Autocomplete
+					chapter,
+					verse,
+					text,
 				},
-			});
+				{
+					headers: {
+						Authorization: `Bearer ${token}`, // Include the token in the header
+					},
+				}
+			);
 
 			if (response.status === 201) {
 				setMessage("");
@@ -134,30 +115,26 @@ const AddVerse = () => {
 			} else {
 				setMessage("Erreur lors de l'enregistrement. Réessayer plu tard.");
 			}
+		} finally {
+			setLoading(false); // Arrête le chargement dans tous les cas
 		}
 	};
-
+	const handleClick = () => {
+		navigate("/");
+	};
 	return (
 		<Box>
 			<Box sx={{ marginBottom: 2 }}>
 				<AppBar position="static">
 					<Toolbar sx={{ justifyContent: "space-between" }}>
-						<Typography variant="h6" sx={{ flexGrow: 1 }}>
-							Admin Panel
-						</Typography>
-
 						<Typography
 							variant="h6"
-							sx={{
-								textAlign: "center",
-								flexGrow: 1,
-								marginLeft: "auto",
-								marginRight: "auto",
-							}}
+							sx={{ flexGrow: 1 }}
+							onClick={handleClick}
+							style={{ cursor: "pointer" }}
 						>
-							Ancien testament: Ajouter un verset
+							Admin Panel
 						</Typography>
-
 						<Button
 							color="inherit"
 							onClick={useLogout()}
@@ -168,116 +145,128 @@ const AddVerse = () => {
 					</Toolbar>
 				</AppBar>
 			</Box>
-			<Box
-				sx={{
-					maxWidth: 500,
-					margin: "0 auto",
-					padding: 4,
-					backgroundColor: "#f4f4f4",
-					borderRadius: 2,
-					boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-				}}
+			<Grid
+				container
+				justifyContent="center"
+				alignItems="center"
+				style={{ marginTop: "20px" }}
 			>
-				<ToastContainer
-					position="top-right" // You can adjust the position
-					autoClose={3000} // Duration before the toast disappears
-					hideProgressBar={false} // Show progress bar
-					newestOnTop={false} // New toasts appear on top
-					closeOnClick // Close toast on click
-					rtl={false} // Right to left
-					pauseOnFocusLoss // Pause when the window is not focused
-					draggable // Enable dragging
-					pauseOnHover // Pause when hovering
-				/>
-				<form onSubmit={handleSubmit}>
-					<Box sx={{ marginBottom: 2 }}>
-						<Autocomplete
-							options={bookOptions}
-							value={book}
-							onChange={(event, newValue) => setBook(newValue)}
-							renderInput={(params) => (
-								<TextField
-									{...params}
-									label="Livre"
-									placeholder="Sélectionner un livre"
-									fullWidth
-								/>
-							)}
-						/>
-					</Box>
-
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							type="number"
-							label="Chapitre"
-							value={chapter}
-							onChange={(e) => setChapter(e.target.value)}
-							placeholder="Chapitre"
-							fullWidth
-						/>
-					</Box>
-
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							type="number"
-							label="Verset"
-							value={verse}
-							onChange={(e) => setVerse(e.target.value)}
-							placeholder="Verset"
-							fullWidth
-						/>
-					</Box>
-
-					<Box sx={{ marginBottom: 2 }}>
-						<TextField
-							label="Texte"
-							value={text}
-							onChange={(e) => setText(e.target.value)}
-							placeholder="Texte du verset"
-							multiline
-							rows={4}
-							fullWidth
-						/>
-					</Box>
-
-					{message && (
+				<Box
+					sx={{
+						padding: "10px",
+						width: "500px", // Defined width
+						borderRadius: "8px",
+						boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+					}}
+				>
+					<ToastContainer
+						position="top-right" // You can adjust the position
+						autoClose={3000} // Duration before the toast disappears
+						hideProgressBar={false} // Show progress bar
+						newestOnTop={false} // New toasts appear on top
+						closeOnClick // Close toast on click
+						rtl={false} // Right to left
+						pauseOnFocusLoss // Pause when the window is not focused
+						draggable // Enable dragging
+						pauseOnHover // Pause when hovering
+					/>
+					<form onSubmit={handleSubmit}>
 						<Typography
-							variant="body2"
-							color="error"
-							align="center"
-							sx={{ marginBottom: 2 }}
+							variant="h4"
+							style={{ marginBottom: "16px", textAlign: "center" }}
 						>
-							{message}
+							Ancien Testament
 						</Typography>
-					)}
-					<Box
-						sx={{
-							marginBottom: 2,
-							display: "flex",
-							justifyContent: "space-between",
-							flexWrap: "wrap",
-						}}
-					>
-						<Button
-							type="submit"
-							variant="contained"
-							color="primary"
-							sx={{ mb: { xs: 1, sm: 0 } }}
-						>
-							Enregistrer
-						</Button>
+						<Box sx={{ marginBottom: 2 }}>
+							<Autocomplete
+								options={bookOptions}
+								value={book}
+								onChange={(event, newValue) => setBook(newValue)}
+								renderInput={(params) => (
+									<TextField
+										{...params}
+										label="Livre"
+										placeholder="Sélectionner un livre"
+										fullWidth
+									/>
+								)}
+							/>
+						</Box>
 
-						<Button
-							variant="outlined"
-							color="info"
-							onClick={handleGoToVerseTable}
-							sx={{ marginLeft: { xs: 0, sm: 2 }, mt: { xs: 1, sm: 0 } }}
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								type="number"
+								label="Chapitre"
+								value={chapter}
+								onChange={(e) => setChapter(e.target.value)}
+								placeholder="Chapitre"
+								fullWidth
+							/>
+						</Box>
+
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								type="number"
+								label="Verset"
+								value={verse}
+								onChange={(e) => setVerse(e.target.value)}
+								placeholder="Verset"
+								fullWidth
+							/>
+						</Box>
+
+						<Box sx={{ marginBottom: 2 }}>
+							<TextField
+								label="Texte"
+								value={text}
+								onChange={(e) => setText(e.target.value)}
+								placeholder="Texte du verset"
+								multiline
+								rows={4}
+								fullWidth
+							/>
+						</Box>
+
+						{message && (
+							<Typography
+								variant="body2"
+								color="error"
+								align="center"
+								sx={{ marginBottom: 2 }}
+							>
+								{message}
+							</Typography>
+						)}
+						<Box
+							sx={{
+								marginBottom: 2,
+								display: "flex",
+								justifyContent: "space-between",
+								flexWrap: "wrap",
+							}}
 						>
-							Voir la Liste
-						</Button>
-					</Box>
-				</form>
-			</Box>
+							<Button
+								type="submit"
+								variant="contained"
+								color="primary"
+								sx={{ mb: { xs: 1, sm: 0 } }}
+								disabled={loading}
+							>
+								{loading ? "Chargement..." : "Enregistrer"}
+							</Button>
+
+							<Button
+								variant="outlined"
+								color="info"
+								onClick={handleGoToVerseTable}
+								sx={{ marginLeft: { xs: 0, sm: 2 }, mt: { xs: 1, sm: 0 } }}
+							>
+								Voir la Liste
+							</Button>
+						</Box>
+					</form>
+				</Box>
+			</Grid>
 		</Box>
 	);
 };
